@@ -11,6 +11,7 @@ input.addEventListener("keyup", function(event) {
   }
 });
 
+
 function submit() {
   var inputval = input.value;
   var xhttp = new XMLHttpRequest();
@@ -22,6 +23,7 @@ function submit() {
   xhttp.send("search=" + encodeURIComponent(inputval));
 }
 
+
 function getHeader() {
   var xhttp = new XMLHttpRequest();
   xhttp.open("GET", "/getheader/");
@@ -31,9 +33,10 @@ function getHeader() {
   xhttp.send();
 }
 
+
 function populateTable(res) {
   var tableDiv = document.getElementById("table");
-  tableDiv.innerHTML = ""
+  tableDiv.innerHTML = "";
 
   console.log(res.responseText);
   var r = JSON.parse(res);
@@ -48,8 +51,9 @@ function populateTable(res) {
   }
 }
 
+
 function renderTable(tableDiv, rows) {
-  var hasGeom = header.length != rows[0].length
+  var hasGeom = header.length != rows[0].length;
 
   // root elements
   var tableEl = document.createElement("table");
@@ -80,7 +84,7 @@ function renderTable(tableDiv, rows) {
 
     if (hasGeom) {
       var link = document.createElement("a");
-      link.setAttribute("href", rows[i][rows[0].length-1])
+      link.setAttribute("href", rows[i][rows[0].length-1]);
       link.setAttribute("target", "_blank");
       link.innerHTML = "View Map"
 
@@ -97,13 +101,15 @@ function renderTable(tableDiv, rows) {
   }
 }
 
+
 function createHeaderEl(name) {
     var fieldEl = document.createElement("th");
     fieldEl.setAttribute("scope", "col");
     fieldEl.innerText = name;
 
-    return fieldEl
+    return fieldEl;
 }
+
 
 function createDataEl(name) {
   var val = document.createElement("td");
