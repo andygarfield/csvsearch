@@ -19,8 +19,8 @@ type val struct {
 }
 
 var (
-	static  = flag.String("staticdir", "static", "the directory storing the static web files")
-	csvPath = flag.String("csv", "", "the input csv filepath")
+	static   = flag.String("staticdir", "static", "the directory storing the static web files")
+	csvPath  = flag.String("csv", "", "the input csv filepath")
 	lonField = flag.String("lon", "", "the field containing longitude values")
 	latField = flag.String("lat", "", "the field containing latitude values")
 )
@@ -115,7 +115,7 @@ func setup() ([]string, [][]string, []val) {
 		panic(err)
 	}
 
-	hasLocation :=  *lonField != "" && *latField != ""
+	hasLocation := *lonField != "" && *latField != ""
 	var (
 		lonIndex = -1
 		latIndex = -1
@@ -145,7 +145,7 @@ func setup() ([]string, [][]string, []val) {
 	c := [][]string{}
 
 	i := 0
-	for  {
+	for {
 		row, err := r.Read()
 		if err == io.EOF {
 			break
@@ -158,7 +158,7 @@ func setup() ([]string, [][]string, []val) {
 				lookup = append(lookup, val{id: i, s: standardize(v)})
 				cRow = append(cRow, v)
 			}
-			
+
 			// Create point from data
 			if j == lonIndex {
 				lon = v
@@ -184,6 +184,9 @@ func setup() ([]string, [][]string, []val) {
 }
 
 func constructLink(lon, lat string) string {
+	if lon == "" || lat == "" {
+		return ""
+	}
 	return fmt.Sprintf(
 		"https://www.google.com/maps/search/?api=1&query=%s,%s&authuser=1",
 		lat, lon,
