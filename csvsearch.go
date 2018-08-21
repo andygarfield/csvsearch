@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,6 +21,8 @@ type val struct {
 var (
 	static  = flag.String("staticdir", "static", "the directory storing the static web files")
 	csvPath = flag.String("csv", "", "the input csv filepath")
+	lonField = flag.String("lon", "", "the field containing longitude values")
+	latField = flag.String("lat", "", "the field containing latitude values")
 )
 
 func main() {
@@ -78,10 +81,18 @@ func findMatchingRows(c [][]string, data []val, s string) ([][]string, error) {
 	})
 
 	if data[i].s == s {
-		rows := [][]string{c[data[i].id]}
+		keys := map[int]bool{}
+
+		foundId := data[i].id
+		rows := [][]string{c[foundId]}
+		keys[foundId] = true
 
 		for j := 1; data[i+j].s == s; j++ {
-			rows = append(rows, c[data[i+j].id])
+			foundId = data[i+j].id
+			if _, found := keys[foundId]; !found {
+				rows = append(rows, c[foundId])
+				keys[foundId] = true
+			}
 		}
 
 		return rows, nil
@@ -104,29 +115,79 @@ func setup() ([]string, [][]string, []val) {
 		panic(err)
 	}
 
-	c, err := r.ReadAll()
-	if err != nil {
-		panic(err)
-	}
+	hasLocation :=  *lonField != "" && *latField != ""
+	var (
+		lonIndex = -1
+		latIndex = -1
+	)
 
-	data := []val{}
-
-	for i, row := range c {
-		if err != nil {
-			break
-		}
-		for _, v := range row {
-			if v != "" {
-				data = append(data, val{id: i, s: standardize(v)})
+	if hasLocation {
+		// recreate header
+		newHeader := []string{}
+		for i, field := range header {
+			// if it's anything other than lon/lat, add it to the new header
+			if field != *lonField && field != *latField {
+				newHeader = append(newHeader, field)
+			} else {
+				// else find indexes
+				if field == *lonField {
+					lonIndex = i
+				}
+				if field == *latField {
+					latIndex = i
+				}
 			}
 		}
+		header = newHeader
 	}
 
-	sort.Slice(data, func(i, j int) bool {
-		return data[i].s < data[j].s
+	lookup := []val{}
+	c := [][]string{}
+
+	i := 0
+	for  {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+
+		var lon, lat string
+		cRow := []string{}
+		for j, v := range row {
+			if j != lonIndex && j != latIndex {
+				lookup = append(lookup, val{id: i, s: standardize(v)})
+				cRow = append(cRow, v)
+			}
+			
+			// Create point from data
+			if j == lonIndex {
+				lon = v
+			}
+			if j == latIndex {
+				lat = v
+			}
+		}
+		if hasLocation {
+			link := constructLink(lon, lat)
+			cRow = append(cRow, link)
+		}
+
+		i++
+		c = append(c, cRow)
+	}
+
+	sort.Slice(lookup, func(i, j int) bool {
+		return lookup[i].s < lookup[j].s
 	})
 
-	return header, c, data
+	return header, c, lookup
+}
+
+func constructLink(lon, lat string) string {
+	return fmt.Sprintf(
+		"https://www.google.com/maps/search/?api=1&query=%s,%s&authuser=1",
+		lat, lon,
+	)
 }
 
 func standardize(s string) string {
