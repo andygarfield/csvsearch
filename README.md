@@ -3,7 +3,7 @@ A simple tool that turns a csv into a searchable app
 
 ## usage
 ```bash
-$ csvsearch --port 8080 --csv "/path/to/lookup.csv" --staticdir ".\static" -lat GPS_LATITUDE -lon GPS_LONGITUDE
+$ csvsearch --port 8080 --csv "/path/to/lookup.csv" --staticdir "./static" -lat GPS_LATITUDE -lon GPS_LONGITUDE
 ```
 
 Then go to http://localhost:8080
