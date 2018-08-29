@@ -19,6 +19,7 @@ type val struct {
 }
 
 var (
+	port     = flag.String("port", "8080", "the port the server will attach to")
 	static   = flag.String("staticdir", "static", "the directory storing the static web files")
 	csvPath  = flag.String("csv", "", "the input csv filepath")
 	lonField = flag.String("lon", "", "the field containing longitude values")
@@ -26,6 +27,7 @@ var (
 )
 
 func main() {
+	fmt.Println("loading csv...")
 	header, c, data := setup()
 	fmt.Println("done setting up")
 
@@ -33,8 +35,8 @@ func main() {
 	http.Handle("/getheader/", headerHandler(header))
 	http.Handle("/search/", searchHandler(c, data))
 
-	fmt.Println("serving at localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("serving at localhost:" + *port)
+	http.ListenAndServe(":"+*port, nil)
 }
 
 func headerHandler(header []string) http.Handler {
@@ -80,18 +82,18 @@ func findMatchingRows(c [][]string, data []val, s string) ([][]string, error) {
 		return data[i].s >= s
 	})
 
-	if data[i].s == s {
-		keys := map[int]bool{}
-
+	if i != len(data) && data[i].s == s && s != "" {
 		foundId := data[i].id
+		foundIds := map[int]bool{foundId: true}
 		rows := [][]string{c[foundId]}
-		keys[foundId] = true
 
-		for j := 1; data[i+j].s == s; j++ {
+		// loop through until there are no more rows with the value
+		for j := 1; i+j != len(data) && data[i+j].s == s; j++ {
 			foundId = data[i+j].id
-			if _, found := keys[foundId]; !found {
+			if _, found := foundIds[foundId]; !found{
+				fmt.Printf("found another at %v\n", i+j)
 				rows = append(rows, c[foundId])
-				keys[foundId] = true
+				foundIds[foundId] = true
 			}
 		}
 
