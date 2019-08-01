@@ -32,8 +32,8 @@ func main() {
 	fmt.Println("done setting up")
 
 	http.Handle("/", http.FileServer(http.Dir(*static)))
-	http.Handle("/getheader/", headerHandler(header))
-	http.Handle("/search/", searchHandler(c, data))
+	http.Handle("/getheader", headerHandler(header))
+	http.Handle("/search", searchHandler(c, data))
 
 	fmt.Println("serving at localhost:" + *port)
 	http.ListenAndServe(":"+*port, nil)
