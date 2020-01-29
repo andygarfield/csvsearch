@@ -15,7 +15,7 @@ input.addEventListener("keyup", function (event) {
 function submit() {
     var inputval = input.value;
     var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", "/search/");
+    xhttp.open("POST", "/search");
     xhttp.onload = function () {
         populateTable(this.responseText);
     }
@@ -26,7 +26,7 @@ function submit() {
 
 function getHeader() {
     var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "/getheader/");
+    xhttp.open("GET", "/getheader");
     xhttp.onload = function () {
         header = JSON.parse(this.responseText);
     }
